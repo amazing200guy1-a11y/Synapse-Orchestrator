@@ -11,7 +11,7 @@
 
 Designed for low-latency decision systems where false positives are expensive and thread-blocking is unacceptable.
 
-> Core proprietary weights, production keys, and live market adapters remain in a private repository.  
+> Core proprietary weights, production keys, and live market adapters remain in a private repository to ensure professionalism .  
 > This public showcase demonstrates architecture, concurrency patterns, and mathematical consensus logic.
 
 ---
