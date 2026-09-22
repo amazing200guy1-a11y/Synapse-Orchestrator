@@ -5,14 +5,11 @@
 ![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--Model-6E40C9?style=for-the-badge)
 ![Redis](https://img.shields.io/badge/Redis-Pub%2FSub-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![Pytest](https://img.shields.io/badge/Pytest-Async-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
-![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 **Institutional-grade multi-agent orchestration layer** that fans out concurrent LLM evaluations across specialized model rooms, enforces a strict deterministic weighted consensus threshold, and broadcasts only high-conviction signals via Redis Pub/Sub.
 
 Designed for low-latency decision systems where false positives are expensive and thread-blocking is unacceptable.
-
-> Core proprietary weights, production keys, and live market adapters remain in a private repository to ensure professionalism .  
-> This public showcase demonstrates architecture, concurrency patterns, and mathematical consensus logic.
 
 ---
 
@@ -122,11 +119,9 @@ Design Principles
 Zero-trust parsing — every model response is validated against a Pydantic model before any arithmetic.
 Fail-closed — timeouts, malformed JSON, or missing fields result in an immediate pause, never a partial consensus.
 Separation of concerns — orchestration, scoring, and broadcast are distinct pure functions.
-Supply-chain discipline — dependencies are pinned to cryptographic exact versions.
-Attribution
-Architected by a Machine Learning & Systems Architect.
-This repository is a portfolio showcase of concurrent multi-agent infrastructure patterns.
-Protected under proprietary guidelines. All rights reserved.
+## 👨‍💻 Author & Engineering Pedigree
+Architected and authored by Usman Abayomi Bamidele ([@amazing200guy1-a11y](https://github.com/amazing200guy1-a11y)).
+License: MIT Open Source.
 
 
 ## ⚖️ Architectural Trade-offs & Engineering Decisions
