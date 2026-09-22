@@ -1,10 +1,10 @@
-"""
+﻿"""
 Synapse-Orchestrator
 --------------------
 High-throughput multi-agent LLM consensus engine (public showcase edition).
 
-- When OPENROUTER_API_KEY is present â†’ live concurrent calls via OpenRouter.
-- When the key is missing â†’ automatic fallback to an advanced local mock
+- When OPENROUTER_API_KEY is present Ã¢â€ â€™ live concurrent calls via OpenRouter.
+- When the key is missing Ã¢â€ â€™ automatic fallback to an advanced local mock
   simulation that models realistic network latency across the three rooms
   (Sentiment, Strategy, Math) and emits structured JSON consensus streams.
 
@@ -45,7 +45,7 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 CONSENSUS_THRESHOLD = 0.92
 REQUEST_TIMEOUT_SECONDS = 12.0
 
-# Mock simulation latency bounds (seconds) â€” models concurrent network jitter
+# Mock simulation latency bounds (seconds) Ã¢â‚¬â€ models concurrent network jitter
 MOCK_LATENCY_MIN = 0.18
 MOCK_LATENCY_MAX = 0.65
 
@@ -127,7 +127,7 @@ class SwarmOrchestrator:
     """
     Asynchronous multi-agent consensus engine.
 
-    Live path  : shared httpx.AsyncClient + asyncio.gather â†’ OpenRouter.
+    Live path  : shared httpx.AsyncClient + asyncio.gather Ã¢â€ â€™ OpenRouter.
     Mock path  : concurrent asyncio.sleep latency simulation + deterministic
                  structured scores when no API key is available.
     """
@@ -140,7 +140,7 @@ class SwarmOrchestrator:
 
         if self.mode == "mock":
             logger.warning(
-                "OPENROUTER_API_KEY not found â€” activating advanced local mock "
+                "OPENROUTER_API_KEY not found Ã¢â‚¬â€ activating advanced local mock "
                 "simulation engine (11-agent latency model)."
             )
         else:
@@ -213,7 +213,7 @@ class SwarmOrchestrator:
             raise
 
     # ------------------------------------------------------------------
-    # Mock path â€” concurrent latency + structured agent votes
+    # Mock path Ã¢â‚¬â€ concurrent latency + structured agent votes
     # ------------------------------------------------------------------
 
     async def _simulate_agent(
@@ -241,12 +241,12 @@ class SwarmOrchestrator:
         rationale_pool = {
             Room.SENTIMENT: [
                 "Order-flow imbalance favours continuation",
-                "Retail sentiment extreme â€” fade probability elevated",
+                "Retail sentiment extreme Ã¢â‚¬â€ fade probability elevated",
                 "Narrative alignment with macro catalyst",
             ],
             Room.STRATEGY: [
                 "Clean OTE entry with HTF bias confirmation",
-                "Liquidity sweep complete â€” displacement confirmed",
+                "Liquidity sweep complete Ã¢â‚¬â€ displacement confirmed",
                 "Risk-reward below institutional threshold",
             ],
             Room.MATH: [
@@ -332,9 +332,9 @@ class SwarmOrchestrator:
         """
         Deterministic weighted consensus.
 
-        C = Î£ (wáµ¢ Ã— sáµ¢) / 10          â†’ range [-1, +1]
+        C = ÃŽÂ£ (wÃ¡ÂµÂ¢ Ãƒâ€” sÃ¡ÂµÂ¢) / 10          Ã¢â€ â€™ range [-1, +1]
         agreement = |C|
-        Execute only if agreement â‰¥ CONSENSUS_THRESHOLD (0.92).
+        Execute only if agreement Ã¢â€°Â¥ CONSENSUS_THRESHOLD (0.92).
         """
         if set(scores.keys()) != set(Room):
             raise ValueError("Scores must contain every room")
@@ -347,13 +347,13 @@ class SwarmOrchestrator:
 
         if should_execute:
             msg = (
-                f"Consensus reached: agreement={agreement:.4f} â‰¥ {CONSENSUS_THRESHOLD}. "
+                f"Consensus reached: agreement={agreement:.4f} Ã¢â€°Â¥ {CONSENSUS_THRESHOLD}. "
                 f"Execution signal authorized."
             )
         else:
             msg = (
                 f"Consensus failed: agreement={agreement:.4f} < {CONSENSUS_THRESHOLD}. "
-                f"Execution paused â€” mathematical disagreement."
+                f"Execution paused Ã¢â‚¬â€ mathematical disagreement."
             )
 
         return ConsensusResult(
@@ -373,7 +373,7 @@ class SwarmOrchestrator:
 
     async def evaluate(self, market_payload: str) -> ConsensusResult:
         """
-        Full pipeline: concurrent room evaluation â†’ validation â†’ weighted consensus.
+        Full pipeline: concurrent room evaluation Ã¢â€ â€™ validation Ã¢â€ â€™ weighted consensus.
         Automatically selects live or mock path.
         Fails closed on any individual room error in live mode.
         """
@@ -402,7 +402,7 @@ class SwarmOrchestrator:
                     }
                 )
         else:
-            # Mock path â€” true concurrent fan-out across all agents in all rooms
+            # Mock path Ã¢â‚¬â€ true concurrent fan-out across all agents in all rooms
             room_tasks = [self._call_room_mock(req) for req in requests]
             room_results = await asyncio.gather(*room_tasks)
 
@@ -439,3 +439,45 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+# ---------------------------------------------------------------------------
+# Token-bucket rate limiter (prevents OpenRouter HTTP 429 storms)
+# ---------------------------------------------------------------------------
+
+import threading as _threading
+
+class TokenBucket:
+    """
+    Thread-safe token-bucket for rate limiting outbound API requests.
+
+    Tokens refill at `rate` per second up to `capacity`.
+    `consume(n)` blocks until n tokens are available.
+    """
+
+    def __init__(self, capacity: float, rate: float) -> None:
+        self._capacity = capacity
+        self._tokens = capacity
+        self._rate = rate
+        self._last_refill = time.monotonic()
+        self._lock = _threading.Lock()
+
+    def _refill(self) -> None:
+        now = time.monotonic()
+        elapsed = now - self._last_refill
+        self._tokens = min(self._capacity, self._tokens + elapsed * self._rate)
+        self._last_refill = now
+
+    def consume(self, tokens: float = 1.0) -> None:
+        """Block until `tokens` tokens are available."""
+        while True:
+            with self._lock:
+                self._refill()
+                if self._tokens >= tokens:
+                    self._tokens -= tokens
+                    return
+            time.sleep(0.05)
+
+
+# Global shared limiter: 5 requests/second burst of 10
+_API_RATE_LIMITER = TokenBucket(capacity=10.0, rate=5.0)
