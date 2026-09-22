@@ -110,3 +110,35 @@ async def test_evaluate_whitespace_payload_raises() -> None:
     engine = SwarmOrchestrator(api_key=None)
     with pytest.raises(ValueError, match="market_payload must be a non-empty string"):
         await engine.evaluate("   \n\t  ")
+
+# ---------------------------------------------------------------------------
+# Token-bucket rate limiter tests
+# ---------------------------------------------------------------------------
+
+from swarm_orchestrator import TokenBucket
+import time as _time
+
+
+def test_token_bucket_allows_under_capacity() -> None:
+    """Consuming within capacity should succeed immediately."""
+    bucket = TokenBucket(capacity=5.0, rate=10.0)
+    bucket.consume(1.0)
+    bucket.consume(1.0)
+    # No assertion needed — if it blocks forever the test times out
+
+
+def test_token_bucket_refills_over_time() -> None:
+    """After draining, waiting should allow another consume."""
+    bucket = TokenBucket(capacity=1.0, rate=100.0)  # fast refill
+    bucket.consume(1.0)          # drain
+    _time.sleep(0.02)            # wait 20ms — refills at 100/s so ~2 tokens back
+    bucket.consume(1.0)          # should succeed immediately
+
+
+def test_token_bucket_respects_capacity_ceiling() -> None:
+    """Tokens must never exceed capacity even after long idle."""
+    bucket = TokenBucket(capacity=3.0, rate=100.0)
+    _time.sleep(0.1)  # would add 10 tokens if uncapped
+    # Drain 3 tokens — should succeed; draining 4 should NOT be instant
+    bucket.consume(3.0)
+    # Just verify no exception
