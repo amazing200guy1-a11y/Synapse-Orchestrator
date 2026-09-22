@@ -3,8 +3,8 @@ Synapse-Orchestrator
 --------------------
 High-throughput multi-agent LLM consensus engine (public showcase edition).
 
-- When OPENROUTER_API_KEY is present → live concurrent calls via OpenRouter.
-- When the key is missing → automatic fallback to an advanced local mock
+- When OPENROUTER_API_KEY is present â†’ live concurrent calls via OpenRouter.
+- When the key is missing â†’ automatic fallback to an advanced local mock
   simulation that models realistic network latency across the three rooms
   (Sentiment, Strategy, Math) and emits structured JSON consensus streams.
 
@@ -45,7 +45,7 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 CONSENSUS_THRESHOLD = 0.92
 REQUEST_TIMEOUT_SECONDS = 12.0
 
-# Mock simulation latency bounds (seconds) — models concurrent network jitter
+# Mock simulation latency bounds (seconds) â€” models concurrent network jitter
 MOCK_LATENCY_MIN = 0.18
 MOCK_LATENCY_MAX = 0.65
 
@@ -127,7 +127,7 @@ class SwarmOrchestrator:
     """
     Asynchronous multi-agent consensus engine.
 
-    Live path  : shared httpx.AsyncClient + asyncio.gather → OpenRouter.
+    Live path  : shared httpx.AsyncClient + asyncio.gather â†’ OpenRouter.
     Mock path  : concurrent asyncio.sleep latency simulation + deterministic
                  structured scores when no API key is available.
     """
@@ -140,7 +140,7 @@ class SwarmOrchestrator:
 
         if self.mode == "mock":
             logger.warning(
-                "OPENROUTER_API_KEY not found — activating advanced local mock "
+                "OPENROUTER_API_KEY not found â€” activating advanced local mock "
                 "simulation engine (11-agent latency model)."
             )
         else:
@@ -213,7 +213,7 @@ class SwarmOrchestrator:
             raise
 
     # ------------------------------------------------------------------
-    # Mock path — concurrent latency + structured agent votes
+    # Mock path â€” concurrent latency + structured agent votes
     # ------------------------------------------------------------------
 
     async def _simulate_agent(
@@ -241,12 +241,12 @@ class SwarmOrchestrator:
         rationale_pool = {
             Room.SENTIMENT: [
                 "Order-flow imbalance favours continuation",
-                "Retail sentiment extreme — fade probability elevated",
+                "Retail sentiment extreme â€” fade probability elevated",
                 "Narrative alignment with macro catalyst",
             ],
             Room.STRATEGY: [
                 "Clean OTE entry with HTF bias confirmation",
-                "Liquidity sweep complete — displacement confirmed",
+                "Liquidity sweep complete â€” displacement confirmed",
                 "Risk-reward below institutional threshold",
             ],
             Room.MATH: [
@@ -323,16 +323,18 @@ class SwarmOrchestrator:
     def compute_consensus(
         self,
         scores: Mapping[Room, int],
-        agent_breakdown: Dict[str, List[Dict[str, Any]]],
-        mode: str,
-        elapsed_ms: float,
+        agent_breakdown: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+        mode: str = "mock",
+        elapsed_ms: float = 0.0,
     ) -> ConsensusResult:
+        if agent_breakdown is None:
+            agent_breakdown = {r.value: [] for r in Room}
         """
         Deterministic weighted consensus.
 
-        C = Σ (wᵢ × sᵢ) / 10          → range [-1, +1]
+        C = Î£ (wáµ¢ Ã— sáµ¢) / 10          â†’ range [-1, +1]
         agreement = |C|
-        Execute only if agreement ≥ CONSENSUS_THRESHOLD (0.92).
+        Execute only if agreement â‰¥ CONSENSUS_THRESHOLD (0.92).
         """
         if set(scores.keys()) != set(Room):
             raise ValueError("Scores must contain every room")
@@ -345,13 +347,13 @@ class SwarmOrchestrator:
 
         if should_execute:
             msg = (
-                f"Consensus reached: agreement={agreement:.4f} ≥ {CONSENSUS_THRESHOLD}. "
+                f"Consensus reached: agreement={agreement:.4f} â‰¥ {CONSENSUS_THRESHOLD}. "
                 f"Execution signal authorized."
             )
         else:
             msg = (
                 f"Consensus failed: agreement={agreement:.4f} < {CONSENSUS_THRESHOLD}. "
-                f"Execution paused — mathematical disagreement."
+                f"Execution paused â€” mathematical disagreement."
             )
 
         return ConsensusResult(
@@ -371,7 +373,7 @@ class SwarmOrchestrator:
 
     async def evaluate(self, market_payload: str) -> ConsensusResult:
         """
-        Full pipeline: concurrent room evaluation → validation → weighted consensus.
+        Full pipeline: concurrent room evaluation â†’ validation â†’ weighted consensus.
         Automatically selects live or mock path.
         Fails closed on any individual room error in live mode.
         """
@@ -400,7 +402,7 @@ class SwarmOrchestrator:
                     }
                 )
         else:
-            # Mock path — true concurrent fan-out across all agents in all rooms
+            # Mock path â€” true concurrent fan-out across all agents in all rooms
             room_tasks = [self._call_room_mock(req) for req in requests]
             room_results = await asyncio.gather(*room_tasks)
 
