@@ -1,4 +1,4 @@
-﻿"""
+"""
 Async test suite for Synapse-Orchestrator.
 
 Verifies:
@@ -142,3 +142,14 @@ def test_token_bucket_respects_capacity_ceiling() -> None:
     # Drain 3 tokens — should succeed; draining 4 should NOT be instant
     bucket.consume(3.0)
     # Just verify no exception
+
+
+@pytest.mark.asyncio
+async def test_benchmark_concurrency_execution() -> None:
+    """Verifies that high-concurrency swarm benchmark executes and returns valid metrics."""
+    from benchmark_concurrency import run_swarm_benchmark
+    res = await run_swarm_benchmark(total_requests=10, max_concurrency=5)
+    assert res["total_evaluations"] == 10
+    assert res["throughput_evals_per_sec"] > 0
+    assert res["latency_p50_ms"] > 0
+    assert res["latency_p99_ms"] >= res["latency_p50_ms"]
