@@ -2,6 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+[![Live Swagger Docs](https://img.shields.io/badge/Live_API-Interactive_Swagger_Docs-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://synapse-orchestrator.onrender.com/docs)
 ![AsyncIO](https://img.shields.io/badge/AsyncIO-Native-brightgreen?style=for-the-badge)
 ![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--Model-6E40C9?style=for-the-badge)
 ![Redis](https://img.shields.io/badge/Redis-Pub%2FSub-DC382D?style=for-the-badge&logo=redis&logoColor=white)
