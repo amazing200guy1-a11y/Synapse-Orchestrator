@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from typing import Any, Dict
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from swarm_orchestrator import (
@@ -25,6 +26,14 @@ app = FastAPI(
     version="1.2.0",
     docs_url="/docs",
     redoc_url="/redoc",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 START_TIME = time.time()
